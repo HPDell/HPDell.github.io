@@ -16,9 +16,15 @@
 <li><code>TrajectoryViterbi1</code>：用于计算概率最大的轨迹。</li>
 <li><code>TrajectorySmoother1</code>：用于滤波。</li>
 </ul>
-<p>在调用过程中，可以创建<code>PathBuilder</code>的子类，来实现自己的路径搜索。子类中只需要实现方法<code>getPaths()</code>，此方法用于在方法<code>getPathsBetweenCollections()</code>中调用以获取路径。必须实现，否则会抛出<code>NotImplementedError</code>的错误。</p>
 <p><code>State</code>、<code>StateCollection</code>、<code>LatLng</code>三个类可以直接使用。对于我们拿到的 GPS 数据来说，一般都会有一些附加的属性值，例如速度、方向、车辆状态等。可以创建自己的继承自<code>LatLng</code>和<code>State</code>的子类，添加这些属性。</p>
-<h1 id="利用-PostGIS-和-pgRouting-实现调用-PIF-算法"><a href="#利用-PostGIS-和-pgRouting-实现调用-PIF-算法" class="headerlink" title="利用 PostGIS 和 pgRouting 实现调用 PIF 算法"></a>利用 PostGIS 和 pgRouting 实现调用 PIF 算法</h1><p>借助 PostGIS 和 pgRouting 可以实现路径搜索功能，而使用 PostGIS 提供的大量的关于几何和地理数据的函数，可以方便实现对 PIF 算法的调用。但是这里需要编写的数据库函数，需要一定的数据库编程的能力。</p>
+<p>我们可以将一些常用的函数，封装到类<code>WuhanRoadFilter</code>中，例如：计算距离的函数<code>distance</code>、计算状态值特征向量和路径特征向量的函数等。</p>
+<p>在调用过程中，可以创建<code>PathBuilder</code>的子类，来实现自己的路径搜索。子类中只需要实现方法<code>getPaths()</code>，此方法用于在方法<code>getPathsBetweenCollections()</code>中调用以获取路径。必须实现，否则会抛出<code>NotImplementedError</code>的错误。我们创建类<code>WuhanRoadBuilder</code>，在该类中实现<code>getPaths()</code>方法。</p>
+<h1 id="利用-PostGIS-和-pgRouting-实现调用-PIF-算法"><a href="#利用-PostGIS-和-pgRouting-实现调用-PIF-算法" class="headerlink" title="利用 PostGIS 和 pgRouting 实现调用 PIF 算法"></a>利用 PostGIS 和 pgRouting 实现调用 PIF 算法</h1><p>借助 PostGIS 和 pgRouting 可以实现路径搜索功能，而使用 PostGIS 提供的大量的关于几何和地理数据的函数，可以方便实现对 PIF 算法的调用。但是这里需要编写的数据库函数，需要一定的数据库编程的能力。为了能够和 Python 编写的 PIF 核心代码结合起来，需要使用 Python 调用 PostgreSQL 函数，并将结果转化为 Geometry 及其子类型的对象。</p>
+<h2 id="使用到的-Python-包"><a href="#使用到的-Python-包" class="headerlink" title="使用到的 Python 包"></a>使用到的 Python 包</h2><p>使用下面两个包即可：</p>
+<ol>
+<li><a href="http://initd.org/psycopg/docs/index.html" target="_blank" rel="noopener">psycopg2</a>：封装了对 PostgreSQL 数据库的操作。</li>
+<li><a href="https://github.com/yohanboniface/python-postgis" target="_blank" rel="noopener">postgis</a>：封装了 PostGIS 空间类型。</li>
+</ol>
 <h2 id="准备路网数据"><a href="#准备路网数据" class="headerlink" title="准备路网数据"></a>准备路网数据</h2><p>假设我们要导入的路网数据名字叫<code>road</code>。一般情况下，我们拿到的数据，坐标系为 WGS84 或常用的投影坐标系（如CGCS2000）。在 WGS84 坐标系下的数据，以<code>Geography</code>类型存储在数据库中，在投影坐标系下的数据，以<code>Geometry</code>类型存储在数据库中。在 <a href="http://postgis.net/docs/manual-2.4/using_postgis_dbmanagement.html#PostGIS_Geography" target="_blank" rel="noopener">PostGIS</a> 的文档中，建议使用<code>Geometry</code>类型存储数据，以减小计算量。</p>
 <blockquote>
 <p>The geography type allows you to store data in longitude/latitude coordinates, but at a cost: there are fewer functions defined on GEOGRAPHY than there are on GEOMETRY; those functions that are defined take more CPU time to execute. </p>
@@ -55,7 +61,7 @@
 </tr>
 <tr>
 <td><code>tolerance</code></td>
-<td>路段不连续误差。8字节浮点数类型。（一般长度单位测量误差最高是毫米级的，因此将该参数设置在0.001左右即在理论上可以包含任何连续的路段，避免测量误差。如果不忽略测量误差，设置在0.001以下即可。如果忽略更大的测量误差，设置在0.001以上）</td>
+<td>路段不连续误差。8字节浮点数类型。</td>
 </tr>
 <tr>
 <td><code>the_geom</code></td>
@@ -87,7 +93,53 @@
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> pgr_createTopology(<span class="string">'public.road'</span>, <span class="number">0.001</span>, <span class="string">'geom'</span>, <span class="string">'gid'</span>);</span><br></pre></td></tr></table></figure>
 <p>路网数据准备完成。</p>
 <h2 id="获取每个-GPS-点对应的状态值"><a href="#获取每个-GPS-点对应的状态值" class="headerlink" title="获取每个 GPS 点对应的状态值"></a>获取每个 GPS 点对应的状态值</h2><p>状态值的获取是在一个路段上计算一个联合分布 $$ π(x|g) = ω(g|x)Ω(x) $$ 其中 $ x $ 是状态值，$ g $ 是 GPS 观测值。但是由于分布 $ ω(g|x) $ 服从正态分布，$ Ω(x) $ 在没有先验知识的情况下，服从均匀分布，因此直接取路段上距离 GPS 观测值最近的点即可。</p>
-<h3 id="几个需要用到的函数"><a href="#几个需要用到的函数" class="headerlink" title="几个需要用到的函数"></a>几个需要用到的函数</h3><h1 id="利用-ArcPy-实现调用-PIF-算法"><a href="#利用-ArcPy-实现调用-PIF-算法" class="headerlink" title="利用 ArcPy 实现调用 PIF 算法"></a>利用 ArcPy 实现调用 PIF 算法</h1>]]></content>
+<h3 id="需要使用到的-PostGIS-函数"><a href="#需要使用到的-PostGIS-函数" class="headerlink" title="需要使用到的 PostGIS 函数"></a>需要使用到的 PostGIS 函数</h3><p>编写这个数据库函数，需要用到 PostGIS 提供的一些函数，如下（参考 <a href="http://postgis.net/docs/manual-2.4/PostGIS_Special_Functions_Index.html#PostGIS_TypeFunctionMatrix" target="_blank" rel="noopener">PostGIS 文档</a>）：</p>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ST_Point(float, float)</code></td>
+<td>构造 Point 对象的函数。</td>
+</tr>
+<tr>
+<td><code>ST_SetSRID(geometry, integer)</code></td>
+<td>设置对象的 SRID（即空间参考）。</td>
+</tr>
+<tr>
+<td><code>ST_Transform(geometry, integer)</code></td>
+<td>将 Geometry 对象进行投影转换。</td>
+</tr>
+<tr>
+<td><code>ST_StartPoint(geometry)</code></td>
+<td>LineString Geometry 对象的第一个点。</td>
+</tr>
+<tr>
+<td><code>ST_EndPoint(geometry)</code></td>
+<td>LineString Geometry 对象的最后一个点。</td>
+</tr>
+<tr>
+<td><code>ST_ClosestPoint(geometry, geometry)</code></td>
+<td>返回第一个 Geometry 对象上距离第二个 Geometry 对象最近的点。</td>
+</tr>
+<tr>
+<td><code>ST_LineLocatePoint(geometry a_linestring, geometry a_point)</code></td>
+<td>返回<code>a_line</code>上距离<code>a_point</code>最近的点在<code>a_line</code>上的百分比。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="编写-PostgreSQL-函数"><a href="#编写-PostgreSQL-函数" class="headerlink" title="编写 PostgreSQL 函数"></a>编写 PostgreSQL 函数</h3><p>函数实现的思路是：首先按照范围筛选处距离指定 GPS 观测值一定距离（例如 100 m）内的路段，然后在这些路段上计算每个最近点。数据库函数<code>PIF_GetStatesAtPosition()</code>的定义如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">OR</span> <span class="keyword">REPLACE</span> <span class="keyword">FUNCTION</span> public.pif_GetStatesAtPosition(</span><br><span class="line">    lon <span class="built_in">float</span>,</span><br><span class="line">    lat <span class="built_in">float</span>,</span><br><span class="line">    distance <span class="built_in">float</span></span><br><span class="line">)</span><br><span class="line"><span class="keyword">RETURNS</span> <span class="keyword">TABLE</span>(StartPoint geometry, EndPoint geometry, States geometry, <span class="keyword">Locate</span> float8, shape_leng <span class="built_in">numeric</span>) <span class="keyword">AS</span> $$</span><br><span class="line"></span><br><span class="line"><span class="keyword">declare</span></span><br><span class="line">    point_g geometry := ST_Transform(ST_SetSRID(ST_Point(lon, lat), <span class="number">4326</span>), <span class="number">3857</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">    <span class="keyword">RETURN</span> <span class="keyword">QUERY</span> <span class="keyword">SELECT</span> ST_Transform(ST_SetSrid(ST_StartPoint(near_lines.geom), <span class="number">3857</span>), <span class="number">4326</span>) <span class="keyword">AS</span> StartPoint, </span><br><span class="line">                        ST_Transform(ST_SetSrid(ST_EndPoint(near_lines.geom), <span class="number">3857</span>), <span class="number">4326</span>) <span class="keyword">AS</span> EndPoint,</span><br><span class="line">                        ST_Transform(ST_ClosestPoint(ST_SetSRID(near_lines.geom, <span class="number">3857</span>), point_g), <span class="number">4326</span>) <span class="keyword">AS</span> States,</span><br><span class="line">                        ST_LineLocatePoint(ST_SetSRID(near_lines.geom, <span class="number">3857</span>), point_g) <span class="keyword">AS</span> <span class="keyword">Locate</span>,</span><br><span class="line">                        near_lines.shape_leng</span><br><span class="line">                 <span class="keyword">FROM</span> (</span><br><span class="line">                     <span class="keyword">SELECT</span> road.geom, road.shape_leng</span><br><span class="line">                     <span class="keyword">FROM</span> public.road</span><br><span class="line">                     <span class="keyword">WHERE</span> geom &lt;-&gt; point_g &lt; distance</span><br><span class="line">                 ) <span class="keyword">AS</span> near_lines;</span><br><span class="line"><span class="keyword">end</span>;</span><br><span class="line">$$ LANGUAGE 'plpgsql';</span><br><span class="line"></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">FUNCTION</span> public.pif_GetStatesAtPosition(<span class="built_in">float</span>, <span class="built_in">float</span>, <span class="built_in">float</span>)</span><br><span class="line">    OWNER <span class="keyword">TO</span> postgres;</span><br></pre></td></tr></table></figure>
+<h3 id="Python-函数的编写"><a href="#Python-函数的编写" class="headerlink" title="Python 函数的编写"></a>Python 函数的编写</h3><p>使用 Python 调用这个函数时，直接使用 psycopg2 包查询该函数即可。对于返回结果进行处理，分别创建<code>State</code>对象，最后添加到<code>StateCollection</code>对象中，并返回。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_posibility_states</span><span class="params">(self, point: TaxiPoint, distance: float)</span>:</span></span><br><span class="line">    <span class="string">''' 获取最可能的状态</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    参数：</span></span><br><span class="line"><span class="string">    - `link_id`: 路段ID</span></span><br><span class="line"><span class="string">    - `point`: 要寻找的点。格式为(lon, lat)的二元组</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    返回值: StateCollection</span></span><br><span class="line"><span class="string">    '''</span></span><br><span class="line">    self.cur.execute(<span class="string">"SELECT startpoint, endpoint, states, locate, shape_leng "</span> +</span><br><span class="line">                     <span class="string">"FROM public.pif_getstatesatposition(%s, %s, %s)"</span>,</span><br><span class="line">                     (point.lng, point.lat, distance))</span><br><span class="line">    states = [] <span class="comment"># type: List[State]</span></span><br><span class="line">    <span class="keyword">for</span> row <span class="keyword">in</span> self.cur:</span><br><span class="line">        start_point = row[<span class="number">0</span>] <span class="comment"># type: postgis.Point</span></span><br><span class="line">        end_point = row[<span class="number">1</span>] <span class="comment"># type: postgis.Point</span></span><br><span class="line">        closest_point = row[<span class="number">2</span>] <span class="comment"># type: postgis.Point</span></span><br><span class="line">        locate = row[<span class="number">3</span>] <span class="comment"># type: float</span></span><br><span class="line">        shape_leng = row[<span class="number">4</span>] <span class="comment"># type: float</span></span><br><span class="line">        link_id = ((start_point.x, start_point.y), (end_point.x, end_point.y))</span><br><span class="line">        cur_state = State(link_id, locate * float(shape_leng), point)</span><br><span class="line">        states.append(cur_state)</span><br><span class="line">    <span class="keyword">return</span> StateCollection(<span class="keyword">None</span>, states, LatLng(closest_point.y, closest_point.x), <span class="keyword">None</span>)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这种查询的方法同样适合于其他支持空间数据的数据库，以及其他类型的语言，例如 C# 和 Java 语言，数据库也可以换成 SQL Server 等其他数据库。问题在于，几乎运行前期绝大部分计算任务都在数据库中完成，数据库计算的压力会比较大，选择一个合适的数据库非常重要。</p>
+</blockquote>
+<h1 id="利用-ArcPy-实现调用-PIF-算法"><a href="#利用-ArcPy-实现调用-PIF-算法" class="headerlink" title="利用 ArcPy 实现调用 PIF 算法"></a>利用 ArcPy 实现调用 PIF 算法</h1>]]></content>
       
         <categories>
             
