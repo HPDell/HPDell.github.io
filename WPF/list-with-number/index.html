@@ -187,13 +187,11 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>给 WPF 列表添加自动编号是个非常头疼的问题。综合网上的解决方案，有几种：</p>
-<ul>
-<li>使用数据绑定。即给数据对象加入一个表示编号的属性，利用数据绑定显示编号。此方法实现方便，但是难以自动更新。</li>
-<li>使用代码。在网上看到了这样一种解决方法，文章很多，比如<a href="http://www.cnblogs.com/CSharpSPF/archive/2012/02/29/2373287.html" target="_blank" rel="noopener">这里</a>，看起来比较麻烦，我们目标是寻找一种纯 XAML 的解决方案。</li>
-<li>还有一个使用 VB.Net 写的代码示例（<a href="http://download.csdn.net/download/u013305271/6874881" target="_blank" rel="noopener">WPF中给listboxItem加上序号标签</a>），声称可以。但是我不太了解 VB，不清除具体情况。</li>
-<li>还有一个方案看起来是非常简单的，也是我所采用的解决方案。最早没有成功实现，后来参考了《WPF 编程宝典》才成功实现。但是现在一时半会儿找不到了。</li>
-</ul>
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>给 WPF 列表添加自动编号是个非常头疼的问题。综合网上的解决方案，有几种：
+- 使用数据绑定。即给数据对象加入一个表示编号的属性，利用数据绑定显示编号。此方法实现方便，但是难以自动更新。
+- 使用代码。在网上看到了这样一种解决方法，文章很多，比如<a href="http://www.cnblogs.com/CSharpSPF/archive/2012/02/29/2373287.html" target="_blank" rel="noopener">这里</a>，看起来比较麻烦，我们目标是寻找一种纯 XAML 的解决方案。
+- 还有一个使用 VB.Net 写的代码示例（<a href="http://download.csdn.net/download/u013305271/6874881" target="_blank" rel="noopener">WPF中给listboxItem加上序号标签</a>），声称可以。但是我不太了解 VB，不清除具体情况。
+- 还有一个方案看起来是非常简单的，也是我所采用的解决方案。最早没有成功实现，后来参考了《WPF 编程宝典》才成功实现。但是现在一时半会儿找不到了。</p>
 <a id="more"></a>
 <h1 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h1><p>《WPF 编程宝典》中介绍了“条纹列表”样式的实现。样子大概如下：</p>
 
@@ -202,57 +200,33 @@
 <p>获取或设置 ItemsControl 中的交替项容器的数目，该控件可使交替容器具有唯一外观。</p>
 </blockquote>
 <p>交替项容器的效果，就是对每一个 ListBoxItem/ListViewItem 有一个 <code>ItemsControl.AlternationIndex</code> 属性，表示该项的交替位置。例如，如果对一个 ListBox/ListView 控件设置 <code>AlternationCount</code> 属性为 3，则每一项的索引号和交替项索引号如下：</p>
-<table>
-<thead>
-<tr>
-<th>列表索引</th>
-<th>交替项索引</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>0</td>
-<td>0</td>
-</tr>
-<tr>
-<td>1</td>
-<td>1</td>
-</tr>
-<tr>
-<td>2</td>
-<td>2</td>
-</tr>
-<tr>
-<td>3</td>
-<td>0</td>
-</tr>
-<tr>
-<td>4</td>
-<td>1</td>
-</tr>
-<tr>
-<td>5</td>
-<td>2</td>
-</tr>
-<tr>
-<td>6</td>
-<td>0</td>
-</tr>
-<tr>
-<td>7</td>
-<td>1</td>
-</tr>
-</tbody>
-</table>
-<p>于是，根据交替项索引，就可以实现条纹列表。在数据模板中，使用 <code>RelativeSource</code> 找到当前数据所在的 <code>ListBoxItem</code>，使用 <code>(ItemsControl.AlternationIndex)</code> 属性获取其交替项索引，对不同的索引进行处理。或者在生成的项的样式模板中，使用触发器修改条目样式，原书代码如下：<br></p>
+<p>|列表索引|交替项索引|
+|—|–|
+|0|0|
+|1|1|
+|2|2|
+|3|0|
+|4|1|
+|5|2|
+|6|0|
+|7|1|</p>
+<p>于是，根据交替项索引，就可以实现条纹列表。在数据模板中，使用 <code>RelativeSource</code> 找到当前数据所在的 <code>ListBoxItem</code>，使用 <code>(ItemsControl.AlternationIndex)</code> 属性获取其交替项索引，对不同的索引进行处理。或者在生成的项的样式模板中，使用触发器修改条目样式，原书代码如下：
+</p>
 <h2 id="编号列表"><a href="#编号列表" class="headerlink" title="编号列表"></a>编号列表</h2><p>将上述方法进行推广，即可得到编号列表。我们可以将 <code>AlternationCount</code> 属性设置为列表项目的总数，这样在 <code>ItemsControl.AlternationIndex</code> 属性中，就可以获取当前列表项在列表中的位置。</p>
-<h3 id="数据绑定"><a href="#数据绑定" class="headerlink" title="数据绑定"></a>数据绑定</h3><p>在数据模板中，将一个 <code>TextBlock</code> 的 <code>Text</code> 属性绑定到该属性中，即可进行显示。<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">TextBlock</span> <span class="attr">Text</span>=<span class="string">"&#123;Binding RelativeSource=&#123;RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem&#125;, </span></span></span><br><span class="line"><span class="tag"><span class="string">                          Path=(ItemsControl.AlternationIndex)"</span> /&gt;</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="数据绑定"><a href="#数据绑定" class="headerlink" title="数据绑定"></a>数据绑定</h3><p>在数据模板中，将一个 <code>TextBlock</code> 的 <code>Text</code> 属性绑定到该属性中，即可进行显示。
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">TextBlock</span> <span class="attr">Text</span>=<span class="string">"&#123;Binding RelativeSource=&#123;RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem&#125;, </span></span></span><br><span class="line"><span class="tag"><span class="string">                          Path=(ItemsControl.AlternationIndex)"</span> /&gt;</span></span><br></pre></td></tr></table></figure></p>
 <h3 id="转换器"><a href="#转换器" class="headerlink" title="转换器"></a>转换器</h3><p>当然，该位置是从 0 开始的，一般我们习惯于从 1 开始。因此，需要一个转换器。既然使用了转换器，就可以自定义很多表示方法，如“周日”、“周一”……“周六”；“第1名”、“第2名”……</p>
-<p>例如如下设计的一个转换器：<br><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title">IntToLevelStringConverter</span> : <span class="title">IValueConverter</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">string</span>[] LevelString = &#123; <span class="string">"第一级"</span>, <span class="string">"第二级"</span>, <span class="string">"第三级"</span>, <span class="string">"第四级"</span>, <span class="string">"第五级"</span> &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">object</span> <span class="title">Convert</span>(<span class="params"><span class="keyword">object</span> <span class="keyword">value</span>, Type targetType, <span class="keyword">object</span> parameter, CultureInfo culture</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> levelRank = (<span class="keyword">int</span>)<span class="keyword">value</span>;</span><br><span class="line">        <span class="keyword">if</span> (levelRank &lt; LevelString.Length)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> LevelString[levelRank];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">object</span> <span class="title">ConvertBack</span>(<span class="params"><span class="keyword">object</span> <span class="keyword">value</span>, Type targetType, <span class="keyword">object</span> parameter, CultureInfo culture</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NotImplementedException();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3 id="使用图片指示等级"><a href="#使用图片指示等级" class="headerlink" title="使用图片指示等级"></a>使用图片指示等级</h3><p>或者使用图片指示等级，如<br><img src="/WPF/list-with-number/1ji.png" alt=""><br><img src="/WPF/list-with-number/2ji.png" alt=""><br><img src="/WPF/list-with-number/3ji.png" alt=""></p>
+<p>例如如下设计的一个转换器：
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title">IntToLevelStringConverter</span> : <span class="title">IValueConverter</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">string</span>[] LevelString = &#123; <span class="string">"第一级"</span>, <span class="string">"第二级"</span>, <span class="string">"第三级"</span>, <span class="string">"第四级"</span>, <span class="string">"第五级"</span> &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">object</span> <span class="title">Convert</span>(<span class="params"><span class="keyword">object</span> <span class="keyword">value</span>, Type targetType, <span class="keyword">object</span> parameter, CultureInfo culture</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> levelRank = (<span class="keyword">int</span>)<span class="keyword">value</span>;</span><br><span class="line">        <span class="keyword">if</span> (levelRank &lt; LevelString.Length)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> LevelString[levelRank];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">object</span> <span class="title">ConvertBack</span>(<span class="params"><span class="keyword">object</span> <span class="keyword">value</span>, Type targetType, <span class="keyword">object</span> parameter, CultureInfo culture</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NotImplementedException();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="使用图片指示等级"><a href="#使用图片指示等级" class="headerlink" title="使用图片指示等级"></a>使用图片指示等级</h3><p>或者使用图片指示等级，如
+<img src="/WPF/list-with-number/1ji.png" alt="">
+<img src="/WPF/list-with-number/2ji.png" alt="">
+<img src="/WPF/list-with-number/3ji.png" alt=""></p>
 <p>那么，XAML 代码中应创建一个 <code>Image</code> 控件，将其 <code>Source</code> 属性绑定到 <code>ItemsControl.AlternationIndex</code> 属性，利用转换器转换成对应图片的 URL。</p>
-<p>XAML的代码：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Image</span> <span class="attr">Source</span>=<span class="string">"&#123;Binding RelativeSource=&#123;RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem&#125;, </span></span></span><br><span class="line"><span class="tag"><span class="string">                        Path=(ItemsControl.AlternationIndex), </span></span></span><br><span class="line"><span class="tag"><span class="string">                        Converter=&#123;StaticResource IntToIconStringConverter&#125;&#125;"</span>/&gt;</span></span><br></pre></td></tr></table></figure></p>
-<p>转换器的代码：<br><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title">IntToIconStringConverter</span> : <span class="title">IValueConverter</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">string</span>[] IconPath =</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="string">"pack://application:,,,/FGISClient.UIControls;component/Icon/FireHandle/1ji.png"</span>,</span><br><span class="line">        <span class="string">"pack://application:,,,/FGISClient.UIControls;component/Icon/FireHandle/2ji.png"</span>,</span><br><span class="line">        <span class="string">"pack://application:,,,/FGISClient.UIControls;component/Icon/FireHandle/3ji.png"</span></span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">object</span> <span class="title">Convert</span>(<span class="params"><span class="keyword">object</span> <span class="keyword">value</span>, Type targetType, <span class="keyword">object</span> parameter, CultureInfo culture</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> levelRank = (<span class="keyword">int</span>)<span class="keyword">value</span>;</span><br><span class="line">        <span class="keyword">if</span> (levelRank &lt; IconPath.Length)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> IconPath[levelRank];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">object</span> <span class="title">ConvertBack</span>(<span class="params"><span class="keyword">object</span> <span class="keyword">value</span>, Type targetType, <span class="keyword">object</span> parameter, CultureInfo culture</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NotImplementedException();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>XAML的代码：
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Image</span> <span class="attr">Source</span>=<span class="string">"&#123;Binding RelativeSource=&#123;RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem&#125;, </span></span></span><br><span class="line"><span class="tag"><span class="string">                        Path=(ItemsControl.AlternationIndex), </span></span></span><br><span class="line"><span class="tag"><span class="string">                        Converter=&#123;StaticResource IntToIconStringConverter&#125;&#125;"</span>/&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>转换器的代码：
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title">IntToIconStringConverter</span> : <span class="title">IValueConverter</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">string</span>[] IconPath =</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="string">"pack://application:,,,/FGISClient.UIControls;component/Icon/FireHandle/1ji.png"</span>,</span><br><span class="line">        <span class="string">"pack://application:,,,/FGISClient.UIControls;component/Icon/FireHandle/2ji.png"</span>,</span><br><span class="line">        <span class="string">"pack://application:,,,/FGISClient.UIControls;component/Icon/FireHandle/3ji.png"</span></span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">object</span> <span class="title">Convert</span>(<span class="params"><span class="keyword">object</span> <span class="keyword">value</span>, Type targetType, <span class="keyword">object</span> parameter, CultureInfo culture</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> levelRank = (<span class="keyword">int</span>)<span class="keyword">value</span>;</span><br><span class="line">        <span class="keyword">if</span> (levelRank &lt; IconPath.Length)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> IconPath[levelRank];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">object</span> <span class="title">ConvertBack</span>(<span class="params"><span class="keyword">object</span> <span class="keyword">value</span>, Type targetType, <span class="keyword">object</span> parameter, CultureInfo culture</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NotImplementedException();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 
       
 
@@ -568,6 +542,14 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">爬虫</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">TypeScript</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">WPF</a>
               </li>
              
@@ -580,15 +562,15 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">爬虫</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">TypeScript</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">Git</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">Vue</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">jQuery Mobile</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -661,6 +643,14 @@ MathJax.Hub.Queue(function() {
           
             <li class="search-li">
               <a href="https://mysticfalls0709.github.io/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>mysticfalls</a>
+            </li>
+          
+            <li class="search-li">
+              <a href="https://blablaxiaomoxian.github.io/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>Shirley Xie</a>
+            </li>
+          
+            <li class="search-li">
+              <a href="http://localhost:4000/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>友情链接5</a>
             </li>
           
         </ul>

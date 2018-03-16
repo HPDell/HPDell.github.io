@@ -188,7 +188,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Path Inference Filter(PIF, 道路推断滤波)算法是一种基于概率的路网匹配算法。其核心代码已经开源在 <a href="https://github.com/tjhunter/Path-Inference-Filter" target="_blank" rel="noopener">GitHub</a> 上，作者也提供了一个<code>example.py</code>文件，来介绍如何使用。我由于需要将此算法真实用于路网匹配中，因此需要根据实际路网对此算法进行调用。之前使用 ArcPy 写了一个，但是运行速度非常慢，而且跑着跑着电脑就自动关机了。所以现在就用 PostGIS 和 pgRouting 重新实现一个版本。<br><a id="more"></a></p>
+        <p>Path Inference Filter(PIF, 道路推断滤波)算法是一种基于概率的路网匹配算法。其核心代码已经开源在 <a href="https://github.com/tjhunter/Path-Inference-Filter" target="_blank" rel="noopener">GitHub</a> 上，作者也提供了一个<code>example.py</code>文件，来介绍如何使用。我由于需要将此算法真实用于路网匹配中，因此需要根据实际路网对此算法进行调用。之前使用 ArcPy 写了一个，但是运行速度非常慢，而且跑着跑着电脑就自动关机了。所以现在就用 PostGIS 和 pgRouting 重新实现一个版本。
+<a id="more"></a></p>
 <h1 id="PIF-的数学原理"><a href="#PIF-的数学原理" class="headerlink" title="PIF 的数学原理"></a>PIF 的数学原理</h1><p>此处详细情况请参考论文 <em><a href="http://bayen.eecs.berkeley.edu/sites/default/files/journals/The_Path_Inference_Filter.pdf" target="_blank" rel="noopener">The Path Inference Filter: Model-Based Low-Latency Map Matching of Probe Vehicle Data</a></em> 。后面我会补充一个自己整理的简略版原理。</p>
 <h1 id="PIF-的接口调用"><a href="#PIF-的接口调用" class="headerlink" title="PIF 的接口调用"></a>PIF 的接口调用</h1><p>PIF 核心库提供了一些类供我们使用。比如：</p>
 <ul>
@@ -233,48 +234,16 @@
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> road <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="keyword">source</span> <span class="built_in">integer</span>;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> road <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> target <span class="built_in">integer</span>;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> road <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> <span class="keyword">length</span> <span class="keyword">double</span> <span class="keyword">precision</span>;</span><br><span class="line"><span class="keyword">UPDATE</span> road <span class="keyword">set</span> <span class="keyword">length</span> = ST_Length(geom); <span class="comment">-- 为路段长度赋值</span></span><br></pre></td></tr></table></figure>
 <p>当然这两个字段的名字可以自己取。路径长度字段如果已经有了，也可以不用重新建立。</p>
 <p>然后是拓扑关系的建立。使用 pgRouting 提供的函数 <a href="http://docs.pgrouting.org/2.4/en/pgr_createTopology.html#pgr-createtopology" target="_blank" rel="noopener"><code>pgr_createTopology()</code></a> 来创建拓扑，该函数有以下参数：</p>
-<table>
-<thead>
-<tr>
-<th>参数名</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>edge_table</code></td>
-<td>路网表名（也可以包含数据库名）。文本类型。</td>
-</tr>
-<tr>
-<td><code>tolerance</code></td>
-<td>路段不连续误差。8字节浮点数类型。</td>
-</tr>
-<tr>
-<td><code>the_geom</code></td>
-<td>路网表中 Geometry 列的名称（默认是”the_geom”）。文本类型。</td>
-</tr>
-<tr>
-<td><code>id</code></td>
-<td>路网表中主键列的名称（默认是”id”）。文本类型。</td>
-</tr>
-<tr>
-<td><code>source</code></td>
-<td>路网表中 source 列的名称（默认是”source”）。文本类型。</td>
-</tr>
-<tr>
-<td><code>target</code></td>
-<td>路网表中 target 列的名称（默认是”target”）。文本类型。</td>
-</tr>
-<tr>
-<td><code>rows_where</code></td>
-<td>用于选择一个子集或多行的 SELECT 条件。默认值是选择所有 source 和 target 为空的行。文本类型。</td>
-</tr>
-<tr>
-<td><code>clean</code></td>
-<td>是否清除之前的拓扑关系（默认是 false ）。布尔型。</td>
-</tr>
-</tbody>
-</table>
+<p>| 参数名       | 说明                                                                                         |
+| ———— | ——————————————————————————————– |
+| <code>edge_table</code> | 路网表名（也可以包含数据库名）。文本类型。                                                   |
+| <code>tolerance</code>  | 路段不连续误差。8字节浮点数类型。                                                            |
+| <code>the_geom</code>   | 路网表中 Geometry 列的名称（默认是”the_geom”）。文本类型。                                   |
+| <code>id</code>         | 路网表中主键列的名称（默认是”id”）。文本类型。                                               |
+| <code>source</code>     | 路网表中 source 列的名称（默认是”source”）。文本类型。                                       |
+| <code>target</code>     | 路网表中 target 列的名称（默认是”target”）。文本类型。                                       |
+| <code>rows_where</code> | 用于选择一个子集或多行的 SELECT 条件。默认值是选择所有 source 和 target 为空的行。文本类型。 |
+| <code>clean</code>      | 是否清除之前的拓扑关系（默认是 false ）。布尔型。                                            |</p>
 <p>具体调用实例为：</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> pgr_createTopology(<span class="string">'public.road'</span>, <span class="number">0.001</span>, <span class="string">'geom'</span>, <span class="string">'gid'</span>);</span><br></pre></td></tr></table></figure>
 <p>路网数据准备完成。</p>
@@ -284,44 +253,15 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">distance</span><span class="params">(self, coord1: LatLng, coord2: LatLng)</span> -&gt; float:</span></span><br><span class="line">    <span class="string">''' 求两地理坐标之间的距离</span></span><br><span class="line"><span class="string">    - `coord1`: 经纬度坐标值</span></span><br><span class="line"><span class="string">    - `coord2`: 经纬度坐标值</span></span><br><span class="line"><span class="string">    - `spatial_ref`: 空间参考。默认为GCS_WGS_1984</span></span><br><span class="line"><span class="string">    '''</span></span><br><span class="line">    cur = self.conn.cursor()</span><br><span class="line">    cur.execute(<span class="string">'SELECT "PIF_GetDistance"(%s, %s, %s, %s)'</span>,</span><br><span class="line">                (coord1.lng, coord1.lat, coord2.lng, coord2.lat))</span><br><span class="line">    <span class="keyword">return</span> cur.fetchone()[<span class="number">0</span>]</span><br></pre></td></tr></table></figure>
 <h2 id="获取每个-GPS-点对应的状态值"><a href="#获取每个-GPS-点对应的状态值" class="headerlink" title="获取每个 GPS 点对应的状态值"></a>获取每个 GPS 点对应的状态值</h2><p>状态值的获取是在一个路段上计算一个联合分布 $$ π(x|g) = ω(g|x)Ω(x) $$ 其中 $ x $ 是状态值，$ g $ 是 GPS 观测值。但是由于分布 $ ω(g|x) $ 服从正态分布，$ Ω(x) $ 在没有先验知识的情况下，服从均匀分布，因此直接取路段上距离 GPS 观测值最近的点即可。</p>
 <h3 id="需要使用到的-PostGIS-函数"><a href="#需要使用到的-PostGIS-函数" class="headerlink" title="需要使用到的 PostGIS 函数"></a>需要使用到的 PostGIS 函数</h3><p>编写这个数据库函数，需要用到 PostGIS 提供的一些函数，如下（参考 <a href="http://postgis.net/docs/manual-2.4/PostGIS_Special_Functions_Index.html#PostGIS_TypeFunctionMatrix" target="_blank" rel="noopener">PostGIS 文档</a>）：</p>
-<table>
-<thead>
-<tr>
-<th>函数</th>
-<th>用途</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>ST_Point(float, float)</code></td>
-<td>构造 Point 对象的函数。</td>
-</tr>
-<tr>
-<td><code>ST_SetSRID(geometry, integer)</code></td>
-<td>设置对象的 SRID（即空间参考）。</td>
-</tr>
-<tr>
-<td><code>ST_Transform(geometry, integer)</code></td>
-<td>将 Geometry 对象进行投影转换。</td>
-</tr>
-<tr>
-<td><code>ST_StartPoint(geometry)</code></td>
-<td>LineString Geometry 对象的第一个点。</td>
-</tr>
-<tr>
-<td><code>ST_EndPoint(geometry)</code></td>
-<td>LineString Geometry 对象的最后一个点。</td>
-</tr>
-<tr>
-<td><code>ST_ClosestPoint(geometry, geometry)</code></td>
-<td>返回第一个 Geometry 对象上距离第二个 Geometry 对象最近的点。</td>
-</tr>
-<tr>
-<td><code>ST_LineLocatePoint(geometry a_linestring, geometry a_point)</code></td>
-<td>返回<code>a_line</code>上距离<code>a_point</code>最近的点在<code>a_line</code>上的百分比。</td>
-</tr>
-</tbody>
-</table>
+<p>| 函数                                                          | 用途                                                         |
+| ————————————————————- | ———————————————————— |
+| <code>ST_Point(float, float)</code>                                      | 构造 Point 对象的函数。                                      |
+| <code>ST_SetSRID(geometry, integer)</code>                               | 设置对象的 SRID（即空间参考）。                              |
+| <code>ST_Transform(geometry, integer)</code>                             | 将 Geometry 对象进行投影转换。                               |
+| <code>ST_StartPoint(geometry)</code>                                     | LineString Geometry 对象的第一个点。                         |
+| <code>ST_EndPoint(geometry)</code>                                       | LineString Geometry 对象的最后一个点。                       |
+| <code>ST_ClosestPoint(geometry, geometry)</code>                         | 返回第一个 Geometry 对象上距离第二个 Geometry 对象最近的点。 |
+| <code>ST_LineLocatePoint(geometry a_linestring, geometry a_point)</code> | 返回<code>a_line</code>上距离<code>a_point</code>最近的点在<code>a_line</code>上的百分比。    |</p>
 <h3 id="编写-PostgreSQL-函数"><a href="#编写-PostgreSQL-函数" class="headerlink" title="编写 PostgreSQL 函数"></a>编写 PostgreSQL 函数</h3><p>函数实现的思路是：首先按照范围筛选处距离指定 GPS 观测值一定距离（例如 100 m）内的路段，然后在这些路段上计算每个最近点。</p>
 <p>数据库函数<code>PIF_GetStatesAtPosition()</code>的定义如下：</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">OR</span> <span class="keyword">REPLACE</span> <span class="keyword">FUNCTION</span> public.pif_GetStatesAtPosition(</span><br><span class="line">    lon <span class="built_in">float</span>,</span><br><span class="line">    lat <span class="built_in">float</span>,</span><br><span class="line">    distance <span class="built_in">float</span></span><br><span class="line">)</span><br><span class="line"><span class="keyword">RETURNS</span> <span class="keyword">TABLE</span>(StartPoint geometry, EndPoint geometry, States geometry, <span class="keyword">Locate</span> float8, shape_leng <span class="built_in">numeric</span>) <span class="keyword">AS</span> $$</span><br><span class="line"></span><br><span class="line"><span class="keyword">declare</span></span><br><span class="line">    point_g geometry := ST_Transform(ST_SetSRID(ST_Point(lon, lat), <span class="number">4326</span>), <span class="number">3857</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line">    <span class="keyword">RETURN</span> <span class="keyword">QUERY</span> <span class="keyword">SELECT</span> ST_Transform(ST_SetSrid(ST_StartPoint(near_lines.geom), <span class="number">3857</span>), <span class="number">4326</span>) <span class="keyword">AS</span> StartPoint, </span><br><span class="line">                        ST_Transform(ST_SetSrid(ST_EndPoint(near_lines.geom), <span class="number">3857</span>), <span class="number">4326</span>) <span class="keyword">AS</span> EndPoint,</span><br><span class="line">                        ST_Transform(ST_ClosestPoint(ST_SetSRID(near_lines.geom, <span class="number">3857</span>), point_g), <span class="number">4326</span>) <span class="keyword">AS</span> States,</span><br><span class="line">                        ST_LineLocatePoint(ST_SetSRID(near_lines.geom, <span class="number">3857</span>), point_g) <span class="keyword">AS</span> <span class="keyword">Locate</span>,</span><br><span class="line">                        near_lines.shape_leng</span><br><span class="line">                 <span class="keyword">FROM</span> (</span><br><span class="line">                     <span class="keyword">SELECT</span> road.geom, road.shape_leng</span><br><span class="line">                     <span class="keyword">FROM</span> public.road</span><br><span class="line">                     <span class="keyword">WHERE</span> geom &lt;-&gt; point_g &lt; distance</span><br><span class="line">                 ) <span class="keyword">AS</span> near_lines;</span><br><span class="line"><span class="keyword">end</span>;</span><br><span class="line">$$ LANGUAGE 'plpgsql';</span><br><span class="line"></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">FUNCTION</span> public.pif_GetStatesAtPosition(<span class="built_in">float</span>, <span class="built_in">float</span>, <span class="built_in">float</span>)</span><br><span class="line">    OWNER <span class="keyword">TO</span> postgres;</span><br></pre></td></tr></table></figure>
@@ -340,81 +280,23 @@
 <li><code>pgr_aStar()</code>：使用 A* 算法求解最短路径。该系列函数即将不受官方支持。</li>
 </ul>
 <p>以<code>pgr_dijkstra()</code>为例，它的参数有：</p>
-<table>
-<thead>
-<tr>
-<th>参数名</th>
-<th>类型</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>sql</code></td>
-<td>文本</td>
-<td>一个 SQL 查询。</td>
-</tr>
-<tr>
-<td><code>source</code></td>
-<td><code>int4</code></td>
-<td>起点的 ID。</td>
-</tr>
-<tr>
-<td><code>target</code></td>
-<td><code>int4</code></td>
-<td>终点的 ID。</td>
-</tr>
-<tr>
-<td><code>directed</code></td>
-<td><code>boolean</code></td>
-<td>如果地图是有向的，那么为<code>ture</code>。</td>
-</tr>
-<tr>
-<td><code>has_rcost</code></td>
-<td><code>boolean</code></td>
-<td>如果为<code>true</code>，SQL 查询的<code>reverse_cost</code>会被用来计算代价值。</td>
-</tr>
-</tbody>
-</table>
+<p>| 参数名      | 类型      | 说明                                                       |
+| ———– | ——— | ———————————————————- |
+| <code>sql</code>       | 文本      | 一个 SQL 查询。                                            |
+| <code>source</code>    | <code>int4</code>    | 起点的 ID。                                                |
+| <code>target</code>    | <code>int4</code>    | 终点的 ID。                                                |
+| <code>directed</code>  | <code>boolean</code> | 如果地图是有向的，那么为<code>ture</code>。                           |
+| <code>has_rcost</code> | <code>boolean</code> | 如果为<code>true</code>，SQL 查询的<code>reverse_cost</code>会被用来计算代价值。 |</p>
 <p>其中 SQL 查询形如</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">id</span>, <span class="keyword">source</span>, target, <span class="keyword">cost</span> [,reverse_cost] <span class="keyword">FROM</span> edge_table</span><br></pre></td></tr></table></figure>
 <p>返回列有：</p>
-<table>
-<thead>
-<tr>
-<th>列名</th>
-<th>类型</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>id</code></td>
-<td><code>int4</code></td>
-<td>边的 ID。</td>
-</tr>
-<tr>
-<td><code>source</code></td>
-<td><code>int4</code></td>
-<td>起点的 ID。</td>
-</tr>
-<tr>
-<td><code>target</code></td>
-<td><code>int4</code></td>
-<td>终点的 ID。</td>
-</tr>
-<tr>
-<td><code>cost</code></td>
-<td><code>float</code></td>
-<td>边的代价值。为负则不考虑此边</td>
-</tr>
-<tr>
-<td><code>reverse_cost</code></td>
-<td>可选</td>
-<td>边的往返代价值。只在<code>directed</code>和<code>has_rcost</code>参数为<code>true</code>时使用。</td>
-</tr>
-</tbody>
-</table>
+<p>| 列名           | 类型    | 说明                                                            |
+| ————– | ——- | ————————————————————— |
+| <code>id</code>           | <code>int4</code>  | 边的 ID。                                                       |
+| <code>source</code>       | <code>int4</code>  | 起点的 ID。                                                     |
+| <code>target</code>       | <code>int4</code>  | 终点的 ID。                                                     |
+| <code>cost</code>         | <code>float</code> | 边的代价值。为负则不考虑此边                                    |
+| <code>reverse_cost</code> | 可选    | 边的往返代价值。只在<code>directed</code>和<code>has_rcost</code>参数为<code>true</code>时使用。 |</p>
 <p>但是 pgRouting 提供的函数，只支持从路网数据的一个节点到另一个节点，也就是不支持任意两点间的最短路径。我们需要自己撰写函数来实现这一点。对于两个点 $ p_1,p_2 $，求解其间最短路径 $ p_1p_2$ 实现的思路如下：</p>
 <ol>
 <li>找到 $ p_1,p_2 $ 最近的线段 $ l_1, l_2$</li>
@@ -441,15 +323,13 @@
 </blockquote>
 <p>对于起始状态，理论上共有 6 种可能。如下图所示。记起始状态点为 $X$，其可能的 6 种情况分别为 $ \left\lbrace x_1, x_2, \cdots, x_6 \right\rbrace $，其所在路段 $ \mathbf{l} = \overrightarrow{ST}$ 起点为 $S$，终点为 $T$，匹配到的整个路径为 $ P $。记符号 $ \lnot \mathbf{L} = \overrightarrow{TS} $。</p>
 <img src="/科研工作/implementation-pif/start-state-process.png" title="起始状态的处理">
-<p>对于每个 $ X \in \left\lbrace x_1, x_2, \cdots, x_6 \right\rbrace $</p>
-<ol>
-<li>$ X = x_1 \neq S \neq T \wedge T = P_2 $ ：这是最一般的情况。只需令 $ P = \left\lbrace S \right \rbrace \cup P $ 即可。</li>
-<li>$ X = S \wedge T = P_2 $ ：此种情况无需处理。</li>
-<li>$ X = T \wedge S \neq P_2 $ ：令 $ P = \left\lbrace S \right \rbrace \cup P $。</li>
-<li>$ X = x_1 \neq S \neq T \wedge S = P_2 $ ：令 $ \mathbf{id}(X) = \lnot \mathbf{l} $。</li>
-<li>$ X = S \wedge T \neq P_2 $ ：令 $ P = \left\lbrace T \right \rbrace \cup P $，且 $ \mathbf{id}(X) = \lnot \mathbf{l} $。</li>
-<li>$ X = T \wedge S = P_2 $ ：令 $ \mathbf{id}(X) = \lnot \mathbf{l} $。</li>
-</ol>
+<p>对于每个 $ X \in \left\lbrace x_1, x_2, \cdots, x_6 \right\rbrace $
+1. $ X = x_1 \neq S \neq T \wedge T = P_2 $ ：这是最一般的情况。只需令 $ P = \left\lbrace S \right \rbrace \cup P $ 即可。
+2. $ X = S \wedge T = P_2 $ ：此种情况无需处理。
+3. $ X = T \wedge S \neq P_2 $ ：令 $ P = \left\lbrace S \right \rbrace \cup P $。
+4. $ X = x_1 \neq S \neq T \wedge S = P_2 $ ：令 $ \mathbf{id}(X) = \lnot \mathbf{l} $。
+5. $ X = S \wedge T \neq P_2 $ ：令 $ P = \left\lbrace T \right \rbrace \cup P $，且 $ \mathbf{id}(X) = \lnot \mathbf{l} $。
+6. $ X = T \wedge S = P_2 $ ：令 $ \mathbf{id}(X) = \lnot \mathbf{l} $。</p>
 <p>对于结束状态，可能的情况如下图。</p>
 <img src="/科研工作/implementation-pif/end-state-process.png">
 <p>处理方法可与上同理。</p>
@@ -571,6 +451,15 @@
 
   
 <nav id="article-nav">
+  
+    <a href="/网页开发/vue-jqm-note/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          Vue 与 jQuery Mobile 混用
+        
+      </div>
+    </a>
   
   
     <a href="/Git/gitweb/" id="article-nav-older" class="article-nav-link-wrap">
@@ -755,6 +644,14 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">爬虫</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">TypeScript</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">WPF</a>
               </li>
              
@@ -767,15 +664,15 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">爬虫</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">TypeScript</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">Git</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">Vue</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">jQuery Mobile</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -848,6 +745,14 @@ MathJax.Hub.Queue(function() {
           
             <li class="search-li">
               <a href="https://mysticfalls0709.github.io/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>mysticfalls</a>
+            </li>
+          
+            <li class="search-li">
+              <a href="https://blablaxiaomoxian.github.io/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>Shirley Xie</a>
+            </li>
+          
+            <li class="search-li">
+              <a href="http://localhost:4000/" target="_blank" class="search-title"><i class="icon-quo-left icon"></i>友情链接5</a>
             </li>
           
         </ul>
