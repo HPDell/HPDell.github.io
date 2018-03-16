@@ -8,17 +8,17 @@
   <link rel="dns-prefetch" href="http://hpdell.github.io">
   <title>VS 下 GeoDa 开发环境配置 | HPDell的个人博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="依赖库下载与安装 下载依赖库 安装依赖库 GDAL 编译安装 wxWidgets 编译 Eigen Boost 编译 BLAS 和 CLAPACK 库编译 SQLite 编译、cURL 编译、 json_spirit 编译     GeoDa 的编译  最近帮师兄配置 GeoDa 的环境，顺便记录下。">
+  <meta name="description" content="目录： - 依赖库下载与安装     - 下载依赖库     - 安装依赖库         - GDAL 编译安装         - wxWidgets 编译         - Eigen         - Boost 编译         - BLAS 和 CLAPACK 库编译         - SQLi">
 <meta property="og:type" content="article">
 <meta property="og:title" content="VS 下 GeoDa 开发环境配置">
 <meta property="og:url" content="http://hpdell.github.io/uncategorized/geoda-setup/index.html">
 <meta property="og:site_name" content="HPDell的个人博客">
-<meta property="og:description" content="依赖库下载与安装 下载依赖库 安装依赖库 GDAL 编译安装 wxWidgets 编译 Eigen Boost 编译 BLAS 和 CLAPACK 库编译 SQLite 编译、cURL 编译、 json_spirit 编译     GeoDa 的编译  最近帮师兄配置 GeoDa 的环境，顺便记录下。">
+<meta property="og:description" content="目录： - 依赖库下载与安装     - 下载依赖库     - 安装依赖库         - GDAL 编译安装         - wxWidgets 编译         - Eigen         - Boost 编译         - BLAS 和 CLAPACK 库编译         - SQLite 编译、cURL 编译、 json_spirit 编译 - GeoDa 的编">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-03-16T12:09:46.051Z">
+<meta property="og:updated_time" content="2018-03-16T12:18:55.584Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="VS 下 GeoDa 开发环境配置">
-<meta name="twitter:description" content="依赖库下载与安装 下载依赖库 安装依赖库 GDAL 编译安装 wxWidgets 编译 Eigen Boost 编译 BLAS 和 CLAPACK 库编译 SQLite 编译、cURL 编译、 json_spirit 编译     GeoDa 的编译  最近帮师兄配置 GeoDa 的环境，顺便记录下。">
+<meta name="twitter:description" content="目录： - 依赖库下载与安装     - 下载依赖库     - 安装依赖库         - GDAL 编译安装         - wxWidgets 编译         - Eigen         - Boost 编译         - BLAS 和 CLAPACK 库编译         - SQLite 编译、cURL 编译、 json_spirit 编译 - GeoDa 的编">
   
     <link rel="alternative" href="/atom.xml" title="HPDell的个人博客" type="application/atom+xml">
   
@@ -182,22 +182,17 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <ol>
-<li><a href="#%E4%BE%9D%E8%B5%96%E5%BA%93%E4%B8%8B%E8%BD%BD%E4%B8%8E%E5%AE%89%E8%A3%85">依赖库下载与安装</a><ol>
-<li><a href="#%E4%B8%8B%E8%BD%BD%E4%BE%9D%E8%B5%96%E5%BA%93">下载依赖库</a></li>
-<li><a href="#%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96%E5%BA%93">安装依赖库</a><ol>
-<li><a href="#gdal-%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85">GDAL 编译安装</a></li>
-<li><a href="#wxwidgets-%E7%BC%96%E8%AF%91">wxWidgets 编译</a></li>
-<li><a href="#eigen">Eigen</a></li>
-<li><a href="#boost-%E7%BC%96%E8%AF%91">Boost 编译</a></li>
-<li><a href="#blas-%E5%92%8C-clapack-%E5%BA%93%E7%BC%96%E8%AF%91">BLAS 和 CLAPACK 库编译</a></li>
-<li><a href="#sqlite-%E7%BC%96%E8%AF%91%E3%80%81curl-%E7%BC%96%E8%AF%91%E3%80%81-jsonspirit-%E7%BC%96%E8%AF%91">SQLite 编译、cURL 编译、 json_spirit 编译</a></li>
-</ol>
-</li>
-</ol>
-</li>
-<li><a href="#geoda-%E7%9A%84%E7%BC%96%E8%AF%91">GeoDa 的编译</a></li>
-</ol>
+        <p>目录：
+- <a href="#%E4%BE%9D%E8%B5%96%E5%BA%93%E4%B8%8B%E8%BD%BD%E4%B8%8E%E5%AE%89%E8%A3%85">依赖库下载与安装</a>
+    - <a href="#%E4%B8%8B%E8%BD%BD%E4%BE%9D%E8%B5%96%E5%BA%93">下载依赖库</a>
+    - <a href="#%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96%E5%BA%93">安装依赖库</a>
+        - <a href="#gdal-%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85">GDAL 编译安装</a>
+        - <a href="#wxwidgets-%E7%BC%96%E8%AF%91">wxWidgets 编译</a>
+        - <a href="#eigen">Eigen</a>
+        - <a href="#boost-%E7%BC%96%E8%AF%91">Boost 编译</a>
+        - <a href="#blas-%E5%92%8C-clapack-%E5%BA%93%E7%BC%96%E8%AF%91">BLAS 和 CLAPACK 库编译</a>
+        - <a href="#sqlite-%E7%BC%96%E8%AF%91%E3%80%81curl-%E7%BC%96%E8%AF%91%E3%80%81-jsonspirit-%E7%BC%96%E8%AF%91">SQLite 编译、cURL 编译、 json_spirit 编译</a>
+- <a href="#geoda-%E7%9A%84%E7%BC%96%E8%AF%91">GeoDa 的编译</a></p>
 <p>最近帮师兄配置 GeoDa 的环境，顺便记录下。
 <a id="more"></a>
 主要会用到一些工具：</p>
