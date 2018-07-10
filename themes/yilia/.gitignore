@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+dist/
+npm-debug.log
+selenium-debug.log
+test/unit/coverage
+test/e2e/reports
+source/
+_config*
+layout/_partial/css.ejs
+layout/_partial/script.ejs
