@@ -3,6 +3,17 @@
   
     
     <entry>
+      <title>武汉大学《硕士英语》课视听文件字幕</title>
+      <link href="/uncategorized/english-postgraduates-subtitles/"/>
+      <url>/uncategorized/english-postgraduates-subtitles/</url>
+      
+        <content type="html"><![CDATA[<p>《硕士英语》主要有 TED 演讲，影视作品，以及采访等。TED 演讲除了 <em>Do Schools Kill Creativity</em> 采用翻译稿制作中英字幕外，其他的 TED 演讲以及记录片 <em>An Inconvenient Truth</em> 均采用 TED2Srt 给出的字幕文件制作成中英字幕。影视作品有《刮痧》和《心灵捕手》，视频自带字幕。其他视频博主使用软件对视听文件进行了语音识别，并制作成了英文字幕。其中， <em>60 Second Adventures in Economics</em> 网上有带中英字幕的视频，可以直接看网上的。<a id="more"></a>下面是这些字幕文件的链接</p><table><thead><tr><th>单元</th><th>文件</th></tr></thead><tbody><tr><td>第一单元</td><td><a href="/assets/english-postgraduates-subtitles/Understanding.the.rise.of.China.ass">Understanding.the.rise.of.China</a></td></tr><tr><td>第二单元</td><td><a href="/assets/english-postgraduates-subtitles/An.Inconvenient.Truth(1).ass">An.Inconvenient.Truth(1)</a></td></tr><tr><td></td><td><a href="/assets/english-postgraduates-subtitles/An.Inconvenient.Truth(2).ass">An.Inconvenient.Truth(2)</a></td></tr><tr><td></td><td><a href="/assets/english-postgraduates-subtitles/Global.warming.ass">global.warming</a></td></tr><tr><td></td><td><a href="/assets/english-postgraduates-subtitles/How.the.ghost.map.helped.end.a.killer.disease.ass">How.the.ghost.map.helped.end.a.killer.disease</a></td></tr><tr><td></td><td><a href="/assets/english-postgraduates-subtitles/Healthy.Foods.ass">Healthy.Foods</a></td></tr><tr><td>第三单元</td><td><a href="/assets/english-postgraduates-subtitles/60.Second.Adventures.in.Economics.(no1).ass">60.Second.Adventures.in.Economics (no1)</a></td></tr><tr><td></td><td><a href="/assets/english-postgraduates-subtitles/60.Second.Adventures.in.Economics.(no2).ass">60.Second.Adventures.in.Economics (no2)</a></td></tr><tr><td></td><td><a href="/assets/english-postgraduates-subtitles/60.Second.Adventures.in.Economics.(no3).ass">60.Second.Adventures.in.Economics (no3)</a></td></tr><tr><td></td><td><a href="/assets/english-postgraduates-subtitles/Grit.The.power.of.passion.and.perseverance.ass">Grit.The.power.of.passion.and.perseverance</a></td></tr><tr><td>第四单元</td><td><a href="/assets/english-postgraduates-subtitles/JamesCameron.ass">JamesCameron</a></td></tr><tr><td>第五单元</td><td><a href="/assets/english-postgraduates-subtitles/CynthiaSchneider.ass">CynthiaSchneider</a></td></tr><tr><td></td><td><a href="/assets/english-postgraduates-subtitles/SirKenRobinson.ass">SirKenRobinson</a></td></tr></tbody></table>]]></content>
+      
+      
+      
+    </entry>
+    
+    <entry>
       <title>利用 Travis-CI 持续集成 LaTeX 文档</title>
       <link href="/LaTeX/latex-travis/"/>
       <url>/LaTeX/latex-travis/</url>
