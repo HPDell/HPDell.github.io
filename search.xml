@@ -3,6 +3,29 @@
   
     
     <entry>
+      <title>测试发布到 GitHub</title>
+      <link href="/%E5%85%B6%E4%BB%96/test-metaweblog-api/"/>
+      <url>/%E5%85%B6%E4%BB%96/test-metaweblog-api/</url>
+      
+        <content type="html"><![CDATA[<h1 id="测试一篇测试博客"><a href="#测试一篇测试博客" class="headerlink" title="测试一篇测试博客"></a>测试一篇测试博客</h1><p>测试通过 MetaWeblog API 发布博客。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 其他 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 测试 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
       <title>自己动手写动态博客</title>
       <link href="/%E7%BC%96%E7%A8%8B/dynamic-blog/"/>
       <url>/%E7%BC%96%E7%A8%8B/dynamic-blog/</url>
