@@ -7,7 +7,7 @@
       <link href="/%E9%9A%8F%E7%AC%94/test-stackedit/"/>
       <url>/%E9%9A%8F%E7%AC%94/test-stackedit/</url>
       
-        <content type="html"><![CDATA[<blockquote><p>Written with <a href="https://stackedit.io/" target="_blank" rel="noopener">StackEdit</a>.<!--stackedit_data:eyJoaXN0b3J5IjpbLTI4NzUwNjM5OF19--></p></blockquote>]]></content>
+        <content type="html"><![CDATA[<p>这篇博客内容是通过 StackEdit 编写的，只是尝试一下使用这个工具编写然后同步，触发 Travis 持续集成，然后更新博客的流程。</p><blockquote><p>Written with <a href="https://stackedit.io/" target="_blank" rel="noopener">StackEdit</a>.<!--stackedit_data:eyJoaXN0b3J5IjpbMjA5ODczMjYxNV19--></p></blockquote>]]></content>
       
       
       <categories>
@@ -16,14 +16,6 @@
           
       </categories>
       
-      
-        <tags>
-            
-            <tag> 影评 </tag>
-            
-            <tag> 哈利波特 </tag>
-            
-        </tags>
       
     </entry>
     
