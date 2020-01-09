@@ -3,13 +3,27 @@
   
     
     <entry>
-      <title></title>
-      <link href="/uncategorized/test-stackedit/"/>
-      <url>/uncategorized/test-stackedit/</url>
+      <title>测试使用 StackEdit  更新博客</title>
+      <link href="/%E9%9A%8F%E7%AC%94/test-stackedit/"/>
+      <url>/%E9%9A%8F%E7%AC%94/test-stackedit/</url>
       
-        <content type="html"><![CDATA[<blockquote><p>Written with <a href="https://stackedit.io/" target="_blank" rel="noopener">StackEdit</a>.<!--stackedit_data:eyJoaXN0b3J5IjpbNzMwOTk4MTE2XX0=--></p></blockquote>]]></content>
+        <content type="html"><![CDATA[<blockquote><p>Written with <a href="https://stackedit.io/" target="_blank" rel="noopener">StackEdit</a>.<!--stackedit_data:eyJoaXN0b3J5IjpbLTI4NzUwNjM5OF19--></p></blockquote>]]></content>
       
       
+      <categories>
+          
+          <category> 随笔 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 影评 </tag>
+            
+            <tag> 哈利波特 </tag>
+            
+        </tags>
       
     </entry>
     
