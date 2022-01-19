@@ -4,12 +4,24 @@
     
     <entry>
       <title>Windows 创建符号链接的命令 mklink</title>
-      <link href="/uncategorized/windows-cmd-mklink/"/>
-      <url>/uncategorized/windows-cmd-mklink/</url>
+      <link href="/%E7%BC%96%E7%A8%8B/windows-cmd-mklink/"/>
+      <url>/%E7%BC%96%E7%A8%8B/windows-cmd-mklink/</url>
       
         <content type="html"><![CDATA[<p>在 Linux 中，命令 <code>ln</code> 可以方便地创建符号链接，而符号链接在系统运行过程中也起到了很重要的作用。符号链接，可以理解为也是一种文件或目录，有自己的名称，只不过访问这个文件或目录，等同于访问其目标。在 Windows 中，可以采用 <code>mklink</code> 命令创建符号链接，也能实现和在 Linux 中类似的效果。</p><h1 id="命令语法"><a href="#命令语法" class="headerlink" title="命令语法"></a>命令语法</h1><p>根据<a href="https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/mklink" target="_blank" rel="noopener">官方文档</a>，该命令的语法如下（注意这是一个 Windows Command Prompt 命令，不能在 Powershell 中使用）：</p><figure class="highlight bat"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mklink [[/d] | [/h] | [/j]] &lt;link&gt; &lt;target&gt;</span><br></pre></td></tr></table></figure><p>该命令中的两个参数 <code>&lt;link&gt;</code> 和 <code>&lt;target&gt;</code>， <code>&lt;link&gt;</code> 是符号链接的名称，而 <code>&lt;target&gt;</code> 是链接目标的路径。根据选项 <code>[/d] [/h] [/j]</code> 的不同该命令一共能创建四种符号链接：文件软链接、文件硬链接、目录软链接、目录联接。参考<a href="https://liam.page/2018/12/10/mklink-in-Windows/" target="_blank" rel="noopener">始终的博客</a>可知：</p><table><thead><tr><th></th><th>文件符号链接</th><th>文件硬链接</th><th>目录符号链接</th><th>目录联接</th></tr></thead><tbody><tr><td>选项</td><td>无</td><td><code>/h</code></td><td><code>/d</code></td><td><code>/j</code></td></tr><tr><td>参数</td><td>文件</td><td>文件</td><td>目录</td><td>目录</td></tr><tr><td>修改同步</td><td>是</td><td>是</td><td>是</td><td>是</td></tr><tr><td>删除同步</td><td>否</td><td>否</td><td>否</td><td>否</td></tr><tr><td>资源管理器类型</td><td><code>.symlink</code></td><td>无特殊显示</td><td>文件夹</td><td>文件夹</td></tr><tr><td>资源管理器图标</td><td>快捷方式</td><td>无特殊显示</td><td>文件夹快捷方式</td><td>文件夹快捷方式</td></tr><tr><td>彻底删除源</td><td>删除源路径</td><td>删除所有硬链接</td><td>删除源路径</td><td>删除源路径</td></tr></tbody></table><p>注意该命令运行需要管理员权限。</p><h1 id="目录符号连接和目录联接"><a href="#目录符号连接和目录联接" class="headerlink" title="目录符号连接和目录联接"></a>目录符号连接和目录联接</h1><p>对于文件，符号连接和硬链接的区别比较明显，而且和 Linux 中的差不多。但是对于目录，有符号链接和联接两种模式，这两种模式看起来是一样的，有什么区别？</p><p>根据 <a href="[Understanding NTFS Hard Links, Junctions and Symbolic Links (2brightsparks.com">Understanding NTFS Hard Links, Junctions and  Symbolic Links</a>](<a href="https://www.2brightsparks.com/resources/articles/NTFS-Hard-Links-Junctions-and-Symbolic-Links.pdf)" target="_blank" rel="noopener">https://www.2brightsparks.com/resources/articles/NTFS-Hard-Links-Junctions-and-Symbolic-Links.pdf)</a>) 中的介绍，这两种模式最大的区别在于使用的技术不同：</p><ul><li>目录联接在 Windows 2000 中被引入，主要基于 NTFS 文件系统的 reparse points 特性实现。重定向的目标必须通过绝对路径定义，所有用于确定目标的信息都在这个路径里。而由于是基于 NTFS 文件系统实现的，所以目录联接只能用于本地路径。</li><li>目录符号链接在 Windows Vista 中被引入，是一种更高级的快捷方式。重定向的目标可以是本地路径，也可以是通过 SMB 协议挂在的网络路径。</li></ul><p>因此，当需要挂在网络路径时，就需要使用 <code>/d</code> 参数创建目录符号链接。如果只是本地路径，那么使用 <code>/j</code> 或者 <code>/d</code> 都可以。</p><p>但是，当链接到 OneDrive 中的文件夹时，如果使用符号链接，会造成一些问题。如果文件没有被下载到本地，那么在双击运行时，资源管理器在下载文件后会产生文件冲突的错误。此时就只能使用 <code>/j</code> 选项，创建目录联接，才可以正常使用。</p>]]></content>
       
       
+      <categories>
+          
+          <category> 编程 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Windows </tag>
+            
+        </tags>
       
     </entry>
     
